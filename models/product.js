@@ -2,11 +2,11 @@ const fs = require('fs');
 const path = require('path');
 
 const p = path.join(
-  path.dirname(process.mainModule.filename),
+  path.dirname(process.cwd()),
+  'ExpressEcommerce',
   'data',
   'products.json'
 );
-
 const getProductsFromFile = cb => {
   fs.readFile(p, (err, fileContent) => {
     if (err) {
@@ -18,7 +18,8 @@ const getProductsFromFile = cb => {
 };
 
 module.exports = class Product {
-  constructor(title, imageUrl, description, price) {
+  constructor(id,title, imageUrl, description, price) {
+    this.id = id;
     this.title = title;
     this.imageUrl = imageUrl;
     this.description = description;
@@ -26,13 +27,30 @@ module.exports = class Product {
   }
 
   save() {
-    this.id = Math.random().toString();
-    getProductsFromFile(products => {
+    getProductsFromFile(products =>{
+      if (this.id) {
+        const index = products.findIndex(
+          prod=>prod.id === this.id
+        );
+        const updatedProducts = [...products];
+        updatedProducts[index] = this;
+      fs.writeFile(p,JSON.stringify(updatedProducts),err =>{
+        if (err){
+          console.log(err)
+        }
+      
+    }) 
+    }else{
+      this.id = Math.random().toString();
       products.push(this);
-      fs.writeFile(p, JSON.stringify(products), err => {
-        console.log(err);
-      });
-    });
+      fs.writeFile(p,JSON.stringify(products),err =>{
+        if (err){
+          console.log(err)
+        }
+       
+      })
+    }
+    })
   }
 
   static fetchAll(cb) {
@@ -42,6 +60,19 @@ module.exports = class Product {
     getProductsFromFile(products =>{
       const product = products.find(prod =>prod.id===id)
       cb(product)
+    })
+  }
+  static deleteById(id,cb) {
+    getProductsFromFile(products =>{
+      const updatedProducts = products.filter(prod => prod.id!==id)
+      fs.writeFile(p,JSON.stringify(updatedProducts),err =>{
+        if (err){
+          console.log(err)
+        }else{
+          cb()
+        }
+      })
+     
     })
   }
 };
