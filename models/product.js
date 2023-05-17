@@ -1,21 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-const p = path.join(
-  path.dirname(process.cwd()),
-  'ExpressEcommerce',
-  'data',
-  'products.json'
-);
-const getProductsFromFile = cb => {
-  fs.readFile(p, (err, fileContent) => {
-    if (err) {
-      cb([]);
-    } else {
-      cb(JSON.parse(fileContent));
-    }
-  });
-};
+const db = require('../util/db_con.js');
 
 module.exports = class Product {
   constructor(id,title, imageUrl, description, price) {
@@ -25,54 +8,17 @@ module.exports = class Product {
     this.description = description;
     this.price = price;
   }
-
   save() {
-    getProductsFromFile(products =>{
-      if (this.id) {
-        const index = products.findIndex(
-          prod=>prod.id === this.id
-        );
-        const updatedProducts = [...products];
-        updatedProducts[index] = this;
-      fs.writeFile(p,JSON.stringify(updatedProducts),err =>{
-        if (err){
-          console.log(err)
-        }
-      
-    }) 
-    }else{
-      this.id = Math.random().toString();
-      products.push(this);
-      fs.writeFile(p,JSON.stringify(products),err =>{
-        if (err){
-          console.log(err)
-        }
-       
-      })
-    }
-    })
+
   }
 
-  static fetchAll(cb) {
-    getProductsFromFile(cb);
+  static fetchAll() {
+    return db.execute('SELECT * FROM products');
   }
-  static findById(id,cb){
-    getProductsFromFile(products =>{
-      const product = products.find(prod =>prod.id===id)
-      cb(product)
-    })
+  static findById(id){
+    
   }
-  static deleteById(id,cb) {
-    getProductsFromFile(products =>{
-      const updatedProducts = products.filter(prod => prod.id!==id)
-      fs.writeFile(p,JSON.stringify(updatedProducts),err =>{
-        if (err){
-          console.log(err)
-        }else{
-          cb()
-        }
-      })
-     
-    })
+  static deleteById(id) {
+   
   }
 };
