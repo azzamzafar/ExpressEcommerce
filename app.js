@@ -1,5 +1,5 @@
 const path = require('path');
-const db = require('./util/db_con.js');
+const sequelize = require('./util/db_con.js');
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -21,4 +21,11 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-app.listen(3000);
+sequelize.sync()
+    .then(result =>{
+        app.listen(3000);
+    })
+    .catch(err => {
+        console.log(err)
+    })
+
