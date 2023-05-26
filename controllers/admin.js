@@ -29,7 +29,7 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.findAll()
+  req.user.getProducts()
   .then(products=>{
     res.render('admin/products', {
       prods: products,
@@ -47,16 +47,19 @@ exports.getEditProduct =  (req,res,next) => {
     return res.redirect('/')
   }
   const prodId = req.params.productId;
-  Product.findByPk(prodId)
-  .then(product=>{
-    if (!product){
+  req.user.getProducts({
+    where:{id:prodId}
+  })
+  .then(prods =>{
+    const product = prods[0]
+    if(!product){
       return res.redirect('/')
-     }
-     res.render('admin/edit-product',{
-      pageTitle: 'Edit Product',
-      editing: editMode,
-      path: '/admin/edit-product',
-      product: product
+    }
+  res.render('admin/edit-product',{
+  pageTitle: 'Edit Product',
+  editing: editMode,
+  path: '/admin/edit-product',
+  product: product
     })
   })
 }

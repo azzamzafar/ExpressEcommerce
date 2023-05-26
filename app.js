@@ -8,7 +8,10 @@ const errorController = require('./controllers/error');
 
 const Product = require('./models/product.js');
 const User = require('./models/user.js');
-
+const Cart = require('./models/cart.js')
+const CartItem = require('./models/cart_items.js')
+const Order = require('./models/order.js')
+const OrderItem = require('./models/order_items.js')
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -38,9 +41,15 @@ Product.belongsTo(User,{
     onDelete: 'CASCADE'
 });
 User.hasMany(Product);
+User.hasOne(Cart);
+Cart.belongsToMany(Product,{through:CartItem});
+Product.belongsToMany(Cart,{through:CartItem});
+Order.belongsTo(User);
+User.hasMany(Order);
+Order.belongsToMany(Product,{through:OrderItem});
 sequelize
-    .sync({force: true})
-    // .sync()
+    // .sync({force: true})
+    .sync()
     .then(result => {
         return User.findByPk(1)
     })
@@ -53,8 +62,10 @@ sequelize
         } else return user;
     })
     .then(user=>{
-        console.log(user)
-        app.listen(3000);
+        return user.createCart();
+    })
+    .then(cart=>{
+        app.listen(3000)
     })
     .catch(err => {
         console.log(err)
